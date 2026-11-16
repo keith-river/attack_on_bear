@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>進撃のベア | Attack on Bear</title>
+<meta name="description" content="森の中で突然クマとエンカウントしたら、あなたは3秒で何を選ぶ？ 気候変動・自然破壊・人とクマの共生を考えるための試作プロトタイプです。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ TITLE SCREEN ============ -->
+<section class="screen active" id="screen-title">
+  <div class="stripe-bar stripes"></div>
+  <div class="title-card">
+    <div class="eyebrow">FOREST ENCOUNTER SIMULATOR</div>
+    <h1 class="jp-title">進撃のベア</h1>
+    <div class="en-title">Attack on Bear — ある日、森の中で、熊にエンカウントしたら</div>
+    <p class="tagline">
+      ある日、森の中で突然クマと出くわしたら——。<br>
+      表示される状況を見て、<b>3秒(目安)</b>で行動を選べ。<br>
+      選んだ行動しだいで、クマは去るか、襲いかかるか。
+    </p>
+
+    <div class="diff-select" id="diffSelect">
+      <button class="diff-btn selected" data-diff="easy">かんたん<small>反応時間 長め・低リスク</small></button>
+      <button class="diff-btn" data-diff="normal">ふつう<small>反応時間 3秒前後</small></button>
+      <button class="diff-btn" data-diff="hard">むずかしい<small>反応時間 短い・高リスク</small></button>
+    </div>
+
+    <button class="start-btn" id="startBtn">ENCOUNTER START</button>
+
+    <div class="rule-box">
+      <b>ルール</b><br>
+      ・クマの様子と周辺環境を見て、10種類の行動から1つを選ぶ<br>
+      ・適切な行動ならポイント増加、不適切な行動だとダメージ増加<br>
+      ・ダメージが0になったらゲームオーバー、ポイントが100を超えればクマをやり過ごしてクリア<br>
+      ・終了後に「行動の振り返り」を表示します
+    </div>
+
+    <div class="note-box">
+      本アプリは完成品ではなく、気候変動・自然破壊・人とクマの共生という地域課題について議論するきっかけとして作られた試作版（プロトタイプ）です。
+      設計・解説文の正確性は専門機関のものではありません。背景やコードは
+      <a href="https://github.com/keith-river/attack_on_bear" target="_blank" rel="noopener">GitHubリポジトリ</a>
+      をご覧ください。
+    </div>
+  </div>
+  <div class="stripe-bar stripes"></div>
+</section>
+
+<!-- ============ GAME SCREEN ============ -->
+<section class="screen" id="screen-game">
+  <div class="hud">
+    <div class="hud-block">
+      <div class="hp-wrap">
+        <div class="hp-label">DAMAGE / 残りHP</div>
+        <div class="hp-bar-bg"><div class="hp-bar-fill" id="hpFill" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="hud-block score-box">
+      <span class="lbl">SCORE</span>
+      <span id="scoreVal">0</span>
+    </div>
+    <div class="hud-block round-box">
+      ROUND <span id="roundVal">1</span> / クリア目標 <span id="targetScore">100</span>pt
+    </div>
+  </div>
+
+  <div class="arena">
+    <div class="scene-frame">
+      <div class="scene-inner">
+        <div class="tag-row">
+          <span class="tag emotion" id="emotionTag">警戒</span>
+          <span class="tag env" id="envTag">静か</span>
+        </div>
+        <div class="bear-emoji">🐻</div>
+        <div class="scene-text" id="sceneText">森の中で突然クマと目が合った。どう動く？</div>
+      </div>
+    </div>
+
+    <div class="timer-wrap">
+      <div class="timer-ring" id="timerRing" style="--pct:100">
+        <div class="timer-inner mono" id="timerVal">3.0</div>
+      </div>
+      <div class="timer-caption">反応リミット</div>
+    </div>
+
+    <div class="action-grid" id="actionGrid"></div>
+  </div>
+</section>
+
+<!-- ============ RESULT OVERLAY ============ -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-card">
+    <div class="result-badge" id="resultBadge">GREAT</div>
+    <div class="result-text" id="resultText">クマは興味をなくして立ち去った。</div>
+    <div class="result-deltas">
+      <span id="ptDelta" class="delta-pos">+15 pt</span>
+      <span id="dmgDelta" class="delta-neg">-0 dmg</span>
+    </div>
+    <button class="continue-btn" id="continueBtn">次のエンカウントへ</button>
+  </div>
+</div>
+
+<!-- ============ END SCREEN ============ -->
+<section class="screen" id="screen-end">
+  <div class="end-wrap">
+    <div class="end-banner" id="endBanner">GAME CLEAR</div>
+    <div class="end-stats">
+      <div><span id="endScore">0</span><small>FINAL SCORE</small></div>
+      <div><span id="endRounds">0</span><small>ROUNDS</small></div>
+    </div>
+
+    <div class="review-title">行動の振り返り</div>
+    <div class="review-list" id="reviewList"></div>
+
+    <div class="end-note">
+      このゲームは、クマとの遭遇そのものより「なぜ遭遇が増えているのか」を考えるための入口です。
+      気候変動による生態系の変化や、過疎による緩衝地帯の消失など、背景にある地域課題については
+      <a href="https://github.com/keith-river/attack_on_bear" target="_blank" rel="noopener">GitHubの記事・README</a>
+      もあわせてご覧ください。
+    </div>
+
+    <button class="retry-btn" id="retryBtn">もう一度挑戦する</button>
+  </div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>
